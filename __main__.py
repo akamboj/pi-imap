@@ -26,6 +26,9 @@ CONFIG_EMAIL_PASSWORD = 'Byibgifvutwac67'
 
 def main():
     read_config()
+    # Set working to dir to this folder
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(dir_path)
 
     mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
 
