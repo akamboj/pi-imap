@@ -16,11 +16,11 @@ COMMAND_WORD = 'COMMAND'
 COMMAND_LIST = ['TurnOnPC']
 COMMANDS = {
     'TurnOnPC' : {
-        'script' : 'TurnOnPC.sh'
+        'script' : './TurnOnPC.sh'
     }
 }
 
-CONFIG_TRUSTED_ADDRESSES = ['rpi.akamboj@gmail.com']
+CONFIG_TRUSTED_ADDRESSES = ['rpi.akamboj@gmail.com', 'akamboj2000@gmail.com']
 CONFIG_EMAIL_ACCOUNT = 'rpi.akamboj@gmail.com'
 CONFIG_EMAIL_PASSWORD = 'Byibgifvutwac67'
 
@@ -109,6 +109,7 @@ def validate_message(sender, subject):
 
 def process_command(command):
     scriptName = COMMANDS[command]['script']
+    log('Running (%s) in dir (%s)' % (scriptName, os.getcwd()))
     subprocess.call([scriptName])
 
 
