@@ -91,7 +91,7 @@ def process_mailbox(mailbox):
             
 
         
-        # mailbox.store(num, '+FLAGS', '\\Deleted')
+        mailbox.store(num, '+FLAGS', '\\Deleted')
 
     # Not sure if we need to actually expunge
     # mailbox.expunge()
@@ -121,7 +121,6 @@ def validate_message(sender, subject):
 
 def process_command(command):
     scriptName = COMMANDS[command]['script']
-    log('Running (%s) in dir (%s)' % (scriptName, os.getcwd()))
     subprocess.call([scriptName])
 
 
