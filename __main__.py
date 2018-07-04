@@ -3,6 +3,7 @@ import sys
 import imaplib
 import email
 import email.header
+import time
 import subprocess
 
 import getpass
@@ -11,6 +12,7 @@ import ConfigParser
 
 # https://gist.github.com/robulouski/7441883
 
+UPDATE_INTERVAL_SECS = 1.0
 OK_RV = 'OK'
 COMMAND_WORD = 'COMMAND'
 COMMAND_LIST = ['TurnOnPC']
@@ -26,6 +28,7 @@ CONFIG_EMAIL_PASSWORD = 'Byibgifvutwac67'
 
 def main():
     read_config()
+
     # Set working to dir to this folder
     dir_path = os.path.dirname(os.path.realpath(__file__))
     os.chdir(dir_path)
@@ -37,13 +40,20 @@ def main():
     print list
 
     rv, data = mailbox.select('INBOX')
-    process_mailbox(mailbox)
-    pass
+    
+    
+    startTime=time.time()
+    while True:
+      print "tick", startTime
+      process_mailbox(mailbox)
+      time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
+    
 
 def log(str):
     print str
 
 def read_config():
+    # TODO
     pass
 
 def process_mailbox(mailbox):
