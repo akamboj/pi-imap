@@ -44,7 +44,6 @@ def main():
     
     startTime=time.time()
     while True:
-      print "tick", startTime
       process_mailbox(mailbox)
       time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
     
@@ -80,11 +79,11 @@ def process_mailbox(mailbox):
             senderEmail = sender[1]
         
 
-        print 'Message %s: %s' % (num, subject)
+        # print 'Message %s: %s' % (num, subject)
 
         validationSucceeded, msg = validate_message(senderEmail, subject)
         if validationSucceeded == True:
-            
+            log('Processing (%s) from (%s)' % (msg, senderEmail))
             process_command(msg)
             pass
         else:
