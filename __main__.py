@@ -22,9 +22,19 @@ COMMANDS = {
     }
 }
 
-CONFIG_TRUSTED_ADDRESSES = ['rpi.akamboj@gmail.com', 'akamboj2000@gmail.com']
-CONFIG_EMAIL_ACCOUNT = 'rpi.akamboj@gmail.com'
-CONFIG_EMAIL_PASSWORD = 'Byibgifvutwac67'
+CONFIG_FILE_NAME = 'Config.cfg'
+CONFIG_SECTION = 'General'
+
+
+
+CONFIG_KEY_EMAIL_ACCOUNT = 'Email'
+CONFIG_EMAIL_ACCOUNT = ''
+
+CONFIG_KEY_EMAIL_PASSWORD = 'Password'
+CONFIG_EMAIL_PASSWORD = ''
+
+CONFIG_KEY_TRUSTED_ADDRESSES = 'TrustedAddresses'
+CONFIG_TRUSTED_ADDRESSES = []
 
 def main():
     read_config()
@@ -36,14 +46,12 @@ def main():
     mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
 
     rv, data = mailbox.login(CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD)
-    rv, list = mailbox.list()
-    print list
-
-    rv, data = mailbox.select('INBOX')
     
     
-    startTime=time.time()
+    
+    startTime = time.time()
     while True:
+      rv, data = mailbox.select('INBOX')
       process_mailbox(mailbox)
       time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
     
@@ -52,8 +60,32 @@ def log(str):
     print str
 
 def read_config():
-    # TODO
-    pass
+    global CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD, CONFIG_TRUSTED_ADDRESSES
+
+    config = ConfigParser.ConfigParser()
+    
+    res = config.read(CONFIG_FILE_NAME)
+    foundConfig = len(res) > 0
+
+    if foundConfig != True:
+        # The config file doesn't exist, so make it
+        config.add_section(CONFIG_SECTION)
+        config.set(CONFIG_SECTION, CONFIG_KEY_EMAIL_ACCOUNT, '')
+        config.set(CONFIG_SECTION, CONFIG_KEY_EMAIL_PASSWORD, '')
+        config.set(CONFIG_SECTION, CONFIG_KEY_TRUSTED_ADDRESSES, '')
+
+        with open(CONFIG_FILE_NAME, 'wb') as configfile:
+            config.write(configfile)
+    else:
+        CONFIG_EMAIL_ACCOUNT = config.get(CONFIG_SECTION, CONFIG_KEY_EMAIL_ACCOUNT)
+        CONFIG_EMAIL_PASSWORD = config.get(CONFIG_SECTION, CONFIG_KEY_EMAIL_PASSWORD)
+        
+        addressList = config.get(CONFIG_SECTION, CONFIG_KEY_TRUSTED_ADDRESSES)
+        # Clean up address strings
+        for item in addressList.split(','):
+            cleanedAddress = item.replace(' ', '').replace('\'', '').replace('\"', '')
+            CONFIG_TRUSTED_ADDRESSES.append(cleanedAddress)
+
 
 def process_mailbox(mailbox):
     
@@ -62,7 +94,7 @@ def process_mailbox(mailbox):
     for num in results[0].split():
         rv, data = mailbox.fetch(num, '(RFC822)')
         if rv != OK_RV:
-            print "ERROR getting message", num
+            log('ERROR getting message %d' % (num))
             return
 
         msg = email.message_from_string(data[0][1])
@@ -79,22 +111,19 @@ def process_mailbox(mailbox):
             senderEmail = sender[1]
         
 
-        # print 'Message %s: %s' % (num, subject)
-
         validationSucceeded, msg = validate_message(senderEmail, subject)
         if validationSucceeded == True:
             log('Processing (%s) from (%s)' % (msg, senderEmail))
             process_command(msg)
-            pass
         else:
             log('Invalid email!\nSender: %s\nSubject: %s' % (senderEmail, subject))
             
 
         
         mailbox.store(num, '+FLAGS', '\\Deleted')
+        log('Archived email')
 
-    # Not sure if we need to actually expunge
-    # mailbox.expunge()
+
 
 
 # Return a tuple. 1st param, True if validation succeeded, if True, the 2nd param is the Command, if not it's why the validation failed
@@ -121,7 +150,10 @@ def validate_message(sender, subject):
 
 def process_command(command):
     scriptName = COMMANDS[command]['script']
-    subprocess.call([scriptName])
+    try:
+        subprocess.call([scriptName])
+    except WindowsError as e:
+        log("Error: " + e.strerror)
 
 
 if __name__ == "__main__":
