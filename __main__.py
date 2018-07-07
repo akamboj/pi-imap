@@ -54,6 +54,9 @@ def main():
     startTime = time.time()
     while True:
       rv, data = mailbox.select('INBOX')
+      if rv != OK_RV:
+          log("Error: got return value of (%s) when trying to select \'INBOX\'" % (rv))
+
       process_mailbox(mailbox)
       time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
     
