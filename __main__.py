@@ -37,11 +37,13 @@ CONFIG_KEY_TRUSTED_ADDRESSES = 'TrustedAddresses'
 CONFIG_TRUSTED_ADDRESSES = []
 
 def main():
-    read_config()
-
     # Set working to dir to this folder
     dir_path = os.path.dirname(os.path.realpath(__file__))
     os.chdir(dir_path)
+
+
+    read_config()
+
 
     mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
 
@@ -68,6 +70,7 @@ def read_config():
     foundConfig = len(res) > 0
 
     if foundConfig != True:
+        log("Config not found")
         # The config file doesn't exist, so make it
         config.add_section(CONFIG_SECTION)
         config.set(CONFIG_SECTION, CONFIG_KEY_EMAIL_ACCOUNT, '')
@@ -76,7 +79,9 @@ def read_config():
 
         with open(CONFIG_FILE_NAME, 'wb') as configfile:
             config.write(configfile)
+            log("Wrote config file to " + CONFIG_FILE_NAME)
     else:
+        log("Config found")
         CONFIG_EMAIL_ACCOUNT = config.get(CONFIG_SECTION, CONFIG_KEY_EMAIL_ACCOUNT)
         CONFIG_EMAIL_PASSWORD = config.get(CONFIG_SECTION, CONFIG_KEY_EMAIL_PASSWORD)
         
