@@ -46,8 +46,9 @@ def main():
 
 
     mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
-
+    log("Logging in")
     rv, data = mailbox.login(CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD)
+    log("Logging in returned (%s)" % (rv))
     
     
     
