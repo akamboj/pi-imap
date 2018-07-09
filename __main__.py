@@ -47,7 +47,7 @@ def main():
 
     read_config()
 
-
+    log('Initial login')
     mailbox = login()
     
     startTime = time.time()
@@ -55,11 +55,12 @@ def main():
         currentTime = time.time()
         # Refresh our login credntials every once in a while
         if currentTime - startTime > REFRESH_LOGIN_INTERVAL_SECS:
+            log('Refreshing login')
             mailbox = login()
 
         rv, data = mailbox.select('INBOX')
         if rv != OK_RV:
-            log("Error: got return value of (%s) when trying to select \'INBOX\'" % (rv))
+            log('Error: got return value of (%s) when trying to select \'INBOX\'' % (rv))
 
         process_mailbox(mailbox)
         time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
@@ -100,9 +101,9 @@ def read_config():
 
 def login():
     mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
-    log("Logging in")
     rv, data = mailbox.login(CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD)
-    log("Logging in returned (%s)" % (rv))
+    if rv != OK_RV:
+        log("Logging in returned (%s)" % (rv))
     return mailbox
 
 def process_mailbox(mailbox):
