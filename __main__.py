@@ -13,7 +13,10 @@ import ConfigParser
 # https://gist.github.com/robulouski/7441883
 
 UPDATE_INTERVAL_SECS = 1.0
+REFRESH_LOGIN_INTERVAL_SECS = 3600
 OK_RV = 'OK'
+
+
 COMMAND_WORD = 'COMMAND'
 COMMAND_LIST = ['TurnOnPC']
 COMMANDS = {
@@ -45,21 +48,21 @@ def main():
     read_config()
 
 
-    mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
-    log("Logging in")
-    rv, data = mailbox.login(CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD)
-    log("Logging in returned (%s)" % (rv))
-    
-    
+    mailbox = login()
     
     startTime = time.time()
     while True:
-      rv, data = mailbox.select('INBOX')
-      if rv != OK_RV:
-          log("Error: got return value of (%s) when trying to select \'INBOX\'" % (rv))
+        currentTime = time.time()
+        # Refresh our login credntials every once in a while
+        if currentTime - startTime > REFRESH_LOGIN_INTERVAL_SECS:
+            mailbox = login()
 
-      process_mailbox(mailbox)
-      time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
+        rv, data = mailbox.select('INBOX')
+        if rv != OK_RV:
+            log("Error: got return value of (%s) when trying to select \'INBOX\'" % (rv))
+
+        process_mailbox(mailbox)
+        time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
     
 
 def log(str):
@@ -95,6 +98,12 @@ def read_config():
             cleanedAddress = item.replace(' ', '').replace('\'', '').replace('\"', '')
             CONFIG_TRUSTED_ADDRESSES.append(cleanedAddress)
 
+def login():
+    mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
+    log("Logging in")
+    rv, data = mailbox.login(CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD)
+    log("Logging in returned (%s)" % (rv))
+    return mailbox
 
 def process_mailbox(mailbox):
     
