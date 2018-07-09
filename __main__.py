@@ -1,13 +1,11 @@
 import os
-import sys
 import imaplib
 import email
 import email.header
 import time
 import subprocess
-
-import getpass
 import ConfigParser
+import logging
 
 
 # https://gist.github.com/robulouski/7441883
@@ -40,15 +38,12 @@ CONFIG_KEY_TRUSTED_ADDRESSES = 'TrustedAddresses'
 CONFIG_TRUSTED_ADDRESSES = []
 
 def main():
-    # Set working to dir to this folder
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    os.chdir(dir_path)
-
-
-    read_config()
+    init()
 
     log('Initial login')
     mailbox = login()
+
+    logging.shutdown()
     
     startTime = time.time()
     while True:
@@ -65,9 +60,36 @@ def main():
         process_mailbox(mailbox)
         time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
     
+def init():
+    # Set working to dir to this folder
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(dir_path)
+
+    # Configure logging
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter(fmt='%(asctime)s - %(message)s', datefmt='%Y/%m/%d %H:%M:%S')
+
+    # Make console logging
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    ch.setFormatter(formatter)
+
+    # Make file logging
+    fh = logging.FileHandler('piimap_log.txt', mode='w')
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+
+    logger.addHandler(ch)
+    logger.addHandler(fh)
+
+    read_config()
 
 def log(str):
-    print str
+    logger = logging.getLogger()
+    logger.debug(str)
+
 
 def read_config():
     global CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD, CONFIG_TRUSTED_ADDRESSES
