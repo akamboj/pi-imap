@@ -46,12 +46,14 @@ def main():
     logging.shutdown()
     
     startTime = time.time()
+    nextLoginRefreshTime = startTime + REFRESH_LOGIN_INTERVAL_SECS
     while True:
         currentTime = time.time()
         # Refresh our login credntials every once in a while
-        if currentTime - startTime > REFRESH_LOGIN_INTERVAL_SECS:
+        if currentTime >= nextLoginRefreshTime:
             log('Refreshing login')
             mailbox = login()
+            nextLoginRefreshTime = currentTime + REFRESH_LOGIN_INTERVAL_SECS
 
         rv, data = mailbox.select('INBOX')
         if rv != OK_RV:
