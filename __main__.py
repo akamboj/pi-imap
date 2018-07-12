@@ -42,11 +42,11 @@ def main():
 
     log('Initial login')
     mailbox = login()
+    log('Initial login complete!')
 
-    logging.shutdown()
-    
     startTime = time.time()
     nextLoginRefreshTime = startTime + REFRESH_LOGIN_INTERVAL_SECS
+    log('Entering update loop')
     while True:
         currentTime = time.time()
         # Refresh our login credntials every once in a while
