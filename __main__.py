@@ -10,7 +10,7 @@ import logging
 
 # https://gist.github.com/robulouski/7441883
 
-UPDATE_INTERVAL_SECS = 1.0
+UPDATE_INTERVAL_SECS = 2.0
 REFRESH_LOGIN_INTERVAL_SECS = 10800 # 3 hours
 OK_RV = 'OK'
 
