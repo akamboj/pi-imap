@@ -91,13 +91,15 @@ def init():
 
     # Make file name
     timeStr = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S');
-    fileNamePath = os.path.join(LOGS_DIR, timeStr + '_' + 'piimap_log.txt')
-    fh = logging.FileHandler(fileNamePath, mode='w')
+    logFilePath = os.path.join(LOGS_DIR, timeStr + '_' + 'piimap_log.txt')
+    fh = logging.FileHandler(logFilePath, mode='w')
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
 
     logger.addHandler(ch)
     logger.addHandler(fh)
+
+    log('Logging to ' + logFilePath)
 
     read_config()
 
