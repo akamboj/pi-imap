@@ -3,6 +3,7 @@ import imaplib
 import email
 import email.header
 import time
+import datetime
 import subprocess
 import ConfigParser
 import logging
@@ -13,7 +14,7 @@ import logging
 UPDATE_INTERVAL_SECS = 2.0
 REFRESH_LOGIN_INTERVAL_SECS = 10800 # 3 hours
 OK_RV = 'OK'
-
+LOGS_DIR = 'Logs'
 
 COMMAND_WORD = 'COMMAND'
 COMMAND_LIST = ['TurnOnPC']
@@ -55,9 +56,12 @@ def main():
             mailbox = login()
             nextLoginRefreshTime = currentTime + REFRESH_LOGIN_INTERVAL_SECS
 
-        rv, data = mailbox.select('INBOX')
-        if rv != OK_RV:
-            log('Error: got return value of (%s) when trying to select \'INBOX\'' % (rv))
+        try:
+            rv, data = mailbox.select('INBOX')
+            if rv != OK_RV:
+                log('Error: got return value of (%s) when trying to select \'INBOX\'' % (rv))
+        except Exception as e:
+            logging.exception("Exception when selecting INBOX")
 
         process_mailbox(mailbox)
         time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
@@ -78,8 +82,17 @@ def init():
     ch.setLevel(logging.DEBUG)
     ch.setFormatter(formatter)
 
+
+
     # Make file logging
-    fh = logging.FileHandler('piimap_log.txt', mode='w')
+    # Make directory for logs
+    if not os.path.exists(LOGS_DIR):
+        os.mkdir(LOGS_DIR)
+
+    # Make file name
+    timeStr = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S');
+    fileNamePath = os.path.join(LOGS_DIR, timeStr + '_' + 'piimap_log.txt')
+    fh = logging.FileHandler(fileNamePath, mode='w')
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
 
