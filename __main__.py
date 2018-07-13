@@ -99,7 +99,7 @@ def init():
     logger.addHandler(ch)
     logger.addHandler(fh)
 
-    log('Logging to ' + logFilePath)
+    log('Logging to \'' + logFilePath + '\'')
 
     read_config()
 
