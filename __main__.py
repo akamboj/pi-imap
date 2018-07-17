@@ -60,10 +60,12 @@ def main():
             rv, data = mailbox.select('INBOX')
             if rv != OK_RV:
                 log('Error: got return value of (%s) when trying to select \'INBOX\'' % (rv))
+            else:
+                process_mailbox(mailbox)
         except Exception as e:
             logging.exception("Exception when selecting INBOX")
 
-        process_mailbox(mailbox)
+        
         time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
     
 def init():
