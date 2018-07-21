@@ -64,6 +64,9 @@ def main():
                 process_mailbox(mailbox)
         except Exception as e:
             logging.exception("Exception when selecting INBOX")
+            # When we get an exception, try immediately refreshing the login
+            log('Forcing refresh of login on next update')
+            nextLoginRefreshTime = currentTime
 
         
         time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
