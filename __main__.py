@@ -63,7 +63,7 @@ def main():
             else:
                 process_mailbox(mailbox)
         except Exception as e:
-            logging.exception("Exception when selecting INBOX")
+            logging.exception("Exception when selecting INBOX.")
             # When we get an exception, try immediately refreshing the login
             log('Forcing refresh of login on next update')
             nextLoginRefreshTime = currentTime
@@ -144,11 +144,15 @@ def read_config():
             CONFIG_TRUSTED_ADDRESSES.append(cleanedAddress)
 
 def login():
-    mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
-    rv, data = mailbox.login(CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD)
-    if rv != OK_RV:
-        log("Logging in returned (%s)" % (rv))
-    return mailbox
+    try:
+        mailbox = imaplib.IMAP4_SSL('imap.gmail.com')
+        rv, data = mailbox.login(CONFIG_EMAIL_ACCOUNT, CONFIG_EMAIL_PASSWORD)
+        if rv != OK_RV:
+            log("Logging in returned (%s)" % (rv))
+        return mailbox
+    except Exception as e:
+        logging.exception("Exception logging in.")
+        pass
 
 def process_mailbox(mailbox):
     
