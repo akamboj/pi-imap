@@ -66,7 +66,7 @@ def main():
             logging.exception("Exception when selecting INBOX.")
             # When we get an exception, try immediately refreshing the login
             log('Forcing refresh of login on next update')
-            nextLoginRefreshTime = currentTime
+            nextLoginRefreshTime = currentTime + 5
 
         
         time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
@@ -95,7 +95,7 @@ def init():
         os.mkdir(LOGS_DIR)
 
     # Make file name
-    timeStr = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S');
+    timeStr = datetime.datetime.today().strftime('%Y-%m-%d %H-%M-%S');
     logFilePath = os.path.join(LOGS_DIR, timeStr + '_' + 'piimap_log.txt')
     fh = logging.FileHandler(logFilePath, mode='w')
     fh.setLevel(logging.DEBUG)
@@ -172,6 +172,11 @@ def process_mailbox(mailbox):
         sender = unicode(decode[0])
         sender = email.utils.parseaddr(sender)
 
+        receivedTime = 'NOT FOUND'
+        date_tuple = email.utils.parsedate_tz(msg['Date'])
+        if date_tuple:
+            receivedTime = datetime.datetime.fromtimestamp(email.utils.mktime_tz(date_tuple)).strftime('%Y-%m-%d %H-%M-%S')
+
         if len(sender) == 1:
             senderEmail = sender[0]
         elif len(sender) == 2:
@@ -180,7 +185,7 @@ def process_mailbox(mailbox):
 
         validationSucceeded, msg = validate_message(senderEmail, subject)
         if validationSucceeded == True:
-            log('Processing (%s) from (%s)' % (msg, senderEmail))
+            log('Processing (%s) from (%s) recevied (%s)' % (msg, senderEmail, receivedTime))
             process_command(msg)
         else:
             log('Invalid email!\nSender: %s\nSubject: %s' % (senderEmail, subject))
@@ -210,7 +215,7 @@ def validate_message(sender, subject):
 
     requestedCommand = splitSubject[1]
     if requestedCommand not in COMMANDS:
-        return FALSE, ''
+        return False, ''
 
     return True, requestedCommand
 
