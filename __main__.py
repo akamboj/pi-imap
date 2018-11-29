@@ -48,6 +48,7 @@ def main():
     startTime = time.time()
     nextLoginRefreshTime = startTime + REFRESH_LOGIN_INTERVAL_SECS
     log('Entering update loop')
+    waitingForLoginRefresh = False
     while True:
         currentTime = time.time()
         # Refresh our login credntials every once in a while
@@ -55,10 +56,11 @@ def main():
             log('Refreshing login')
             mailbox = login()
             nextLoginRefreshTime = currentTime + REFRESH_LOGIN_INTERVAL_SECS
+            waitingForLoginRefresh = False
 
         try:
             # Only select the inbox if there isn't a login refresh scheduled
-            if nextLoginRefreshTime <= currentTime:
+            if waitingForLoginRefresh == False:
                 rv, data = mailbox.select('INBOX')
                 if rv != OK_RV:
                     log('Error: got return value of (%s) when trying to select \'INBOX\'' % (rv))
@@ -69,6 +71,7 @@ def main():
             # When we get an exception, try immediately refreshing the login
             log('Forcing refresh of login on next update')
             nextLoginRefreshTime = currentTime + 5
+            waitingForLoginRefresh = True
 
         
         time.sleep(UPDATE_INTERVAL_SECS - ((time.time() - startTime) % UPDATE_INTERVAL_SECS))
