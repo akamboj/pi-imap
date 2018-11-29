@@ -57,11 +57,13 @@ def main():
             nextLoginRefreshTime = currentTime + REFRESH_LOGIN_INTERVAL_SECS
 
         try:
-            rv, data = mailbox.select('INBOX')
-            if rv != OK_RV:
-                log('Error: got return value of (%s) when trying to select \'INBOX\'' % (rv))
-            else:
-                process_mailbox(mailbox)
+            # Only select the inbox if there isn't a login refresh scheduled
+            if nextLoginRefreshTime <= currentTime:
+                rv, data = mailbox.select('INBOX')
+                if rv != OK_RV:
+                    log('Error: got return value of (%s) when trying to select \'INBOX\'' % (rv))
+                else:
+                    process_mailbox(mailbox)
         except Exception as e:
             logging.exception("Exception when selecting INBOX.")
             # When we get an exception, try immediately refreshing the login
